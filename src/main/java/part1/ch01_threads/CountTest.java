@@ -1,11 +1,15 @@
 package part1.ch01_threads;
 
 import java.math.BigInteger;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CountTest
+
 {
     private static class CountTask implements Runnable
     {
+    	public static AtomicInteger summe = new AtomicInteger(0);
+    	
         private int start;
         private int end;
 
@@ -18,20 +22,21 @@ public class CountTest
         @Override
         public void run()
         {
-            int count = 0;
+           
 
-            System.out.println("Start serach " + Thread.currentThread().getName());
-            long startTime = System.currentTimeMillis();
+            //System.out.println("Start serach " + Thread.currentThread().getName());
+            //long startTime = System.currentTimeMillis();
             for ( long candidate = start; candidate < end; candidate++ ) {
                 BigInteger bInt = BigInteger.valueOf(candidate);
                 if ( bInt.isProbablePrime(1000) ) {
-                    count++;
+                    summe.incrementAndGet();
                 }
             }
-            long endTime = System.currentTimeMillis();
+            //long endTime = System.currentTimeMillis();
 
-            System.out.println("Elapsed time " + ( endTime - startTime ) + " [ms] from " + Thread.currentThread().getName());
-            System.out.println("Number of prims " + count + " " + Thread.currentThread().getName());
+            
+            //System.out.println("Elapsed time " + ( endTime - startTime ) + " [ms] from " + Thread.currentThread().getName());
+            //System.out.println("Number of prims " + count + " " + Thread.currentThread().getName());
         }
     }
 
@@ -55,6 +60,8 @@ public class CountTest
         t2.join();
         t3.join();
         t4.join();
+        
+        System.out.println("Summer " + CountTask.summe.get() );
 
         long end = System.currentTimeMillis();
         System.out.println("Elapsed time " + ( end - start ) + " [ms] from " + Thread.currentThread().getName());
