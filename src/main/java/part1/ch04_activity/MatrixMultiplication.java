@@ -7,6 +7,8 @@ public class MatrixMultiplication
 
    public static void main(String[] args)
    {
+	  System.out.println("Anzahl Threads: " + Runtime.getRuntime().availableProcessors() ); 
+	   
       final int SIZE = 1500;
 
       double[][] A = Util.getRandomMatrix(SIZE, SIZE);
