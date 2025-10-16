@@ -8,11 +8,14 @@ public class Example_01
    public static void main(String[] args)
    {
 	  System.out.println("Start");
+	  
 	  long start = System.currentTimeMillis();
-      long count = IntStream.range(1_000_000, 2_000_000)
-    		  				.parallel()
-                            .mapToObj( BigInteger::valueOf ) 
+      long count = IntStream.range(1, 100)
+    		  				//.parallel()
+                            .mapToObj( (i) -> BigInteger.valueOf(i) ) 
                             .filter( bInt -> bInt.isProbablePrime(1000) )
+                            .peek( i -> System.out.println(i) )
+                            
                             .count();
       long end = System.currentTimeMillis();               
       
