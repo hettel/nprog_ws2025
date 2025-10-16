@@ -1,3 +1,8 @@
+
+# Bilder
+*.jpg
+*.png
+
 # Eclipse
 .classpath
 .project
