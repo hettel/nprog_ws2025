@@ -14,8 +14,7 @@ public class Main {
 	{
 		Path path = Paths.get("odyssey.txt") ;
 		String content = Files.readString( path , Charset.forName ("UTF8") ) ;
-		content = content.replace("-", "");
-		String words[ ] = content.split( "\\s+" ) ;
+		String words[ ] = content.split( "\\s+|;|\\.|,|-|/") ;
 		
 		long count = content.chars ( ).filter( Character::isLetter ).count ( ) ;
 		
@@ -25,14 +24,14 @@ public class Main {
 		String maxLenString =
 		Arrays.stream(words)
 		      .parallel()
-		      .map( a -> new String(a) )
+		      .filter(str -> str.matches("[a-zA-Z'\\-´]*"))
 		      .reduce("", maxlenSuche );
 		
 		
 		System.out.println(" Number of characters " + count );
 		System.out.println(" Number of words " + words.length) ;
 		
-		System.out.println("MaxLen String" + maxLenString);
+		System.out.println("MaxLen String: " + maxLenString);
 
 	}
 
