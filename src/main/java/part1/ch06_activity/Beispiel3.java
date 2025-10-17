@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.function.BinaryOperator;
 
-public class Main {
+public class Beispiel3 {
 
 	public static void main(String[] args) throws IOException
 	{
@@ -18,21 +18,21 @@ public class Main {
 		
 		String words[ ] = content.split( "\\s+|;|\\.|,|-|/") ;
 		
-		BinaryOperator<String> maxlenSuche = (left, right) -> left.length() > right.length() ? left: right;
-		
-		
-		String maxLenString =
+		long len =
 		Arrays.stream(words)
-		      .parallel()
-		      .filter(str -> str.matches("[a-zA-Z'\\-´]*"))
-		      .reduce("", maxlenSuche );
+		      .mapToInt( s -> s.length() )
+		      .sum();
+		      //.reduce(0, (links,oben) -> links + oben );
 		
-		
-		System.out.println(" Number of characters " + count );
-		System.out.println(" Number of words " + words.length) ;
-		
-		System.out.println("MaxLen String: " + maxLenString);
+		System.out.println("len : " + len );
+		System.out.println("count : " + count );
 
+		long len2 = Arrays.stream(words) 
+				          .parallel()
+				          .reduce(0, (links, oben ) -> links+oben.length(), (a,b)-> a + b );
+		
+		System.out.println("len2 " + len2 );
+		
 	}
 
 }

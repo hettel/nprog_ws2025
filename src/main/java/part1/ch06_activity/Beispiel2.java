@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.function.BinaryOperator;
 
-public class Main {
+public class Beispiel2 {
 
 	public static void main(String[] args) throws IOException
 	{
@@ -16,23 +16,18 @@ public class Main {
 		String content = Files.readString( path , Charset.forName ("UTF8") ) ;
 		long count = content.chars ( ).filter( Character::isLetter ).count ( ) ;
 		
-		String words[ ] = content.split( "\\s+|;|\\.|,|-|/") ;
 		
-		BinaryOperator<String> maxlenSuche = (left, right) -> left.length() > right.length() ? left: right;
-		
-		
-		String maxLenString =
-		Arrays.stream(words)
-		      .parallel()
-		      .filter(str -> str.matches("[a-zA-Z'\\-´]*"))
-		      .reduce("", maxlenSuche );
+		long countVokale = 
+		content.chars()
+		       .filter( c -> "aeiouAEIOU".indexOf(c) >= 0 )
+		       .count();
+		       //.reduce(0, (links,oben) -> links+1 );
 		
 		
-		System.out.println(" Number of characters " + count );
-		System.out.println(" Number of words " + words.length) ;
+		System.out.println("Anzahl der Buchstaben " + count );
+		System.out.println("Anzahl der Vokale: " + countVokale);
 		
-		System.out.println("MaxLen String: " + maxLenString);
-
 	}
 
 }
+

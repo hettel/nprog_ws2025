@@ -17,7 +17,7 @@ public class Example_03
    public static double[][] getRandomMatrix(final int row, final int col)
    {     
       return IntStream.range(0, row)
-                      .mapToObj( i -> ThreadLocalRandom.current().doubles(col).toArray() )
+                      .mapToObj( _  -> ThreadLocalRandom.current().doubles(col).toArray() )
                       .toArray( double[][]::new );
    }
 }

@@ -4,7 +4,7 @@ package part1.ch06_activity;
 import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
-public class Aufgabe1 {
+public class Beispiel1 {
 
 	public static void main(String[] args)
 	{

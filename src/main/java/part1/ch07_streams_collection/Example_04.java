@@ -13,7 +13,7 @@ public class Example_04
       List<Integer> distinctRandomList =
             IntStream.range(0, 100)
                      .parallel()
-                     .map( i -> ThreadLocalRandom.current().nextInt(1000))
+                     .map( _ -> ThreadLocalRandom.current().nextInt(1000))
                      .mapToObj( i -> Integer.valueOf(i) )
                      .distinct()
                      .collect( Collectors.toList() );

@@ -13,7 +13,7 @@ public class Example_01
       List<Integer> primes = IntStream.range(0, 1_000)
             .filter(i -> BigInteger.valueOf(i).isProbablePrime(1000) )
             .mapToObj( i -> Integer.valueOf(i) )
-          //.toList();
+            //.toList();
             .collect( Collectors.toList() );
       
       System.out.println("Count " + primes.size() );
