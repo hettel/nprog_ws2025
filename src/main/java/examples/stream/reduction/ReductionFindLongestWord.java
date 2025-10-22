@@ -43,13 +43,16 @@ public class ReductionFindLongestWord
       System.out.println("Len " + str1.get().length());
 
       System.out.println("With parallel stream");
-      String str2 = Arrays.stream(words).parallel().filter(str -> str.matches("[a-zA-Z'\\-´]*")).reduce("",
-            (left, str) -> left.length() > str.length() ? left : str);
+      String str2 = Arrays.stream(words).parallel()
+    		              .filter(str -> str.matches("[a-zA-Z'\\-´]*"))
+    		              .reduce("", (left, str) -> left.length() > str.length() ? left : str);
 
       System.out.println("Longest String with parallel streams : " + str2);
       System.out.println("Len " + str2.length());
 
-//      System.out.println("Words with 19 characters");
-//      Arrays.stream(words).filter(str -> str.matches("[a-zA-Z'\\-´]*")).filter( word -> word.length() == 19 ).forEach( str -> System.out.println(str) );
+      System.out.println("Words with 19 characters");
+      Arrays.stream(words).filter(str -> str.matches("[a-zA-Z'\\-´]*"))
+                          .filter( word -> word.length() == 19 )
+                          .forEach( str -> System.out.println(str) );
    }
 }
