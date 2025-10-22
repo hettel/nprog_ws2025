@@ -14,8 +14,8 @@ import kmeans.util.IOTools;
 import kmeans.util.Image;
 import kmeans.util.Pixel;
 
-public class KMeans {
-
+public class KMeans 
+{
 	public static void main(String[] args) throws IOException 
 	{
 		final String inputFileName = "Eisvogel.jpg";
@@ -36,7 +36,7 @@ public class KMeans {
 		System.out.println("Reduce image (k = " + k + ")");
 		long startTime = System.currentTimeMillis();
 		
-		
+		// inplace reduction
 		reduce(image, k);
 		
 
