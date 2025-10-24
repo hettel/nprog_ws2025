@@ -18,6 +18,7 @@ public class KMeans
 {
 	public static void main(String[] args) throws IOException 
 	{
+		System.out.println("Start processing");
 		final String inputFileName = "Eisvogel.jpg";
 		final String outputFileName = "reduced_" + inputFileName;
 		
@@ -25,9 +26,9 @@ public class KMeans
 		final int k = 5;
 
 		System.out.println("Color k-Means");
-		System.out.println("Load image: " + inputFileName);
+		System.out.println("Load and create image: " + inputFileName);
 		long startLoading = System.currentTimeMillis();
-		Image image = IOTools.load("bilder/" + inputFileName);
+		Image image = IOTools.load_with_streams("bilder/" + inputFileName);
 		long endLoading = System.currentTimeMillis();
 		System.out.println("Loading image : " + (endLoading - startLoading) + "[ms]");
 		System.out.println("Num of pixels : " + image.getPixelCount());
@@ -44,7 +45,10 @@ public class KMeans
 		System.out.println("Duration: " + (endTime - startTime) + "[ms]");
 
 		System.out.println("Store image: " + outputFileName);
+		long startStore = System.currentTimeMillis();
 		IOTools.store(image, "bilder/" + outputFileName);
+		long endStore = System.currentTimeMillis();
+		System.out.println("Store image : " + (endStore - startStore) + "[ms]");
 		System.out.println("done");
 
 	}

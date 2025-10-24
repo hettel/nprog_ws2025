@@ -15,7 +15,7 @@ public class CharFrequency
 
    public static void main(String[] args) throws IOException
    {
-      Path path = Paths.get( "Homer-Odyssey-UTF8-Coding.txt");
+      Path path = Paths.get( "odyssey.txt");
       String content = Files.readString(path, Charset.forName("UTF8"));
       
       long count = content.chars().filter( Character::isLetter ).count();
