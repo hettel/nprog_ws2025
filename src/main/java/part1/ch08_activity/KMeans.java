@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import kmeans.util.ColorCentroid;
 import kmeans.util.DistanceTools;
@@ -28,7 +29,7 @@ public class KMeans
 		System.out.println("Color k-Means");
 		System.out.println("Load and create image: " + inputFileName);
 		long startLoading = System.currentTimeMillis();
-		Image image = IOTools.load_with_streams("bilder/" + inputFileName);
+		Image image = IOTools.load("bilder/" + inputFileName);
 		long endLoading = System.currentTimeMillis();
 		System.out.println("Loading image : " + (endLoading - startLoading) + "[ms]");
 		System.out.println("Num of pixels : " + image.getPixelCount());
@@ -38,7 +39,7 @@ public class KMeans
 		long startTime = System.currentTimeMillis();
 		
 		// inplace reduction
-		reduce(image, k);
+		reduce_v1(image, k);
 		
 
 		long endTime = System.currentTimeMillis();
@@ -56,7 +57,7 @@ public class KMeans
 	
 	private static void reduce(Image image, final int maxCluster)
 	{
-		// random assignment of color pixels to a cluster
+		// random assignment of pixels to a cluster
 		Random rand = new Random();
 		for(Pixel pixel : image.pixels )
 		{
@@ -123,6 +124,105 @@ public class KMeans
 					pixel.green = (int) centroids[pixel.centroidId].green;
 					pixel.blue  = (int) centroids[pixel.centroidId].blue;
 				}
+				
+				// finish
+				break;
+			}
+		}
+	}
+	
+	private static void reduce_v1(Image image, final int maxCluster)
+	{
+		// random assignment of pixels to a cluster
+		image.pixels.parallelStream().forEach( p -> p.centroidId = ThreadLocalRandom.current().nextInt(maxCluster) );
+		
+
+		ColorCentroid[] centroids = new ColorCentroid[maxCluster];
+
+
+		while (true) {
+		
+
+			/*
+			Map<Integer, List<Pixel>> clusterMapList = new HashMap<Integer, List<Pixel>>();
+			for( int i=0; i < maxCluster; i++ )
+			{
+				clusterMapList.put(i, new ArrayList<Pixel>() );
+			}
+			for( Pixel pixel : image.pixels )
+			{
+				clusterMapList.get( pixel.centroidId ).add(pixel);
+			}*/
+			
+			// grouping pixels according to centroids			
+			Map<Integer, List<Pixel>> clusterMapList = image.pixels.parallelStream()
+					                                        .collect( Collectors.groupingBy( pixel -> pixel.centroidId ));
+			
+
+			// calculate new centroids
+			
+			for (Integer id : clusterMapList.keySet() ) {
+				
+				if( clusterMapList.containsKey(id) == false )
+				{
+					System.out.println("leeres Cluster");
+					continue;
+				}
+				// use double[3]
+				// a[0] - sum red
+				// a[1] - sum green
+				// a[2] - sum blue
+				double[] colorSum =   
+				clusterMapList.get(id).parallelStream()
+				   .map( pixel -> {
+					   double[] colorVal = new double[3];
+					   colorVal[0] = pixel.red;
+					   colorVal[1] = pixel.green;
+					   colorVal[2] = pixel.blue;
+					   return colorVal;
+				   } )
+				   .reduce( new double[3], (left, above) -> {  
+					  left[0] += above[0];
+					  left[1] += above[1];
+					  left[2] += above[2];
+					  return left;
+				   },
+						   (left, right) -> {  
+								  left[0] += right[0];
+								  left[1] += right[1];
+								  left[2] += right[2];
+								  return left;}   );
+				   
+				
+				double len = clusterMapList.get(id).size();
+
+				centroids[id] = new ColorCentroid(colorSum[0] / len, colorSum[1] / len, colorSum[2] / len);
+			}
+
+			// assign new centroids
+			long accum = 
+			image.pixels.parallelStream().filter( pixel -> {
+				int newClusterId = DistanceTools.getNearestCentroidId(pixel, centroids);
+				if (newClusterId != pixel.centroidId) {
+					pixel.centroidId = newClusterId;
+					return true;
+				}
+				else
+				{
+					return false;
+					}
+			} ).count();
+			
+
+			// if there are no reallocation
+			// the cluster is stable
+			if (accum == 0) {
+				// reassign the new color (centroid) to the pixel
+				image.pixels.parallelStream().forEach( pixel -> {
+					pixel.red   = (int) centroids[pixel.centroidId].red;
+					pixel.green = (int) centroids[pixel.centroidId].green;
+					pixel.blue  = (int) centroids[pixel.centroidId].blue;
+				} );
 				
 				// finish
 				break;
