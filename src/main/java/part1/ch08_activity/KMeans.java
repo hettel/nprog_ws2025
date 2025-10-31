@@ -2,11 +2,18 @@ package part1.ch08_activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import kmeans.util.ColorCentroid;
@@ -39,7 +46,7 @@ public class KMeans
 		long startTime = System.currentTimeMillis();
 		
 		// inplace reduction
-		reduce_v1(image, k);
+		reduce_v2(image, k);
 		
 
 		long endTime = System.currentTimeMillis();
@@ -141,63 +148,141 @@ public class KMeans
 
 
 		while (true) {
-		
-
-			/*
-			Map<Integer, List<Pixel>> clusterMapList = new HashMap<Integer, List<Pixel>>();
-			for( int i=0; i < maxCluster; i++ )
-			{
-				clusterMapList.put(i, new ArrayList<Pixel>() );
-			}
-			for( Pixel pixel : image.pixels )
-			{
-				clusterMapList.get( pixel.centroidId ).add(pixel);
-			}*/
 			
 			// grouping pixels according to centroids			
 			Map<Integer, List<Pixel>> clusterMapList = image.pixels.parallelStream()
 					                                        .collect( Collectors.groupingBy( pixel -> pixel.centroidId ));
 			
 
-			// calculate new centroids
-			
+			// calculate new centroids			
 			for (Integer id : clusterMapList.keySet() ) {
 				
-				if( clusterMapList.containsKey(id) == false )
-				{
-					System.out.println("leeres Cluster");
-					continue;
-				}
 				// use double[3]
 				// a[0] - sum red
 				// a[1] - sum green
 				// a[2] - sum blue
 				double[] colorSum =   
 				clusterMapList.get(id).parallelStream()
-				   .map( pixel -> {
-					   double[] colorVal = new double[3];
-					   colorVal[0] = pixel.red;
-					   colorVal[1] = pixel.green;
-					   colorVal[2] = pixel.blue;
-					   return colorVal;
-				   } )
-				   .reduce( new double[3], (left, above) -> {  
-					  left[0] += above[0];
-					  left[1] += above[1];
-					  left[2] += above[2];
-					  return left;
-				   },
+				   .collect( () -> new double[3], 
+						   (acc, pixel) -> {  
+							   acc[0] += pixel.red;
+							   acc[1] += pixel.green;
+							   acc[2] += pixel.blue;
+						   },
 						   (left, right) -> {  
 								  left[0] += right[0];
 								  left[1] += right[1];
 								  left[2] += right[2];
-								  return left;}   );
+						   } );
 				   
 				
 				double len = clusterMapList.get(id).size();
-
+				
 				centroids[id] = new ColorCentroid(colorSum[0] / len, colorSum[1] / len, colorSum[2] / len);
 			}
+
+			// assign new centroids
+			long accum = 
+			image.pixels.parallelStream().filter( pixel -> {
+				int newClusterId = DistanceTools.getNearestCentroidId(pixel, centroids);
+				if (newClusterId != pixel.centroidId) {
+					pixel.centroidId = newClusterId;
+					return true;
+				}
+				else
+				{
+					return false;
+					}
+			} ).count();
+			
+
+			// if there are no reallocation
+			// the cluster is stable
+			if (accum == 0) {
+				// reassign the new color (centroid) to the pixel
+				image.pixels.parallelStream().forEach( pixel -> {
+					pixel.red   = (int) centroids[pixel.centroidId].red;
+					pixel.green = (int) centroids[pixel.centroidId].green;
+					pixel.blue  = (int) centroids[pixel.centroidId].blue;
+				} );
+				
+				// finish
+				break;
+			}
+		}
+	}
+	
+	
+	
+	private static class CentroidCollector implements Collector<Pixel, double[], ColorCentroid>
+	{
+		// use double[4]
+		// a[0] - sum red
+		// a[1] - sum green
+		// a[2] - sum blue
+		// a[3] - count
+
+		@Override
+		public Supplier<double[]> supplier() {
+			return () -> new double[4];
+		}
+
+		@Override
+		public BiConsumer<double[], Pixel> accumulator() 
+		{
+			return (acc, pixel) -> {  
+				   acc[0] += pixel.red;
+				   acc[1] += pixel.green;
+				   acc[2] += pixel.blue;
+				   acc[3] += 1;
+			   };
+		}
+
+		@Override
+		public BinaryOperator<double[]> combiner() {
+			return (left, right) -> {  
+				  left[0] += right[0];
+				  left[1] += right[1];
+				  left[2] += right[2];
+				  left[3] += right[3];
+				  return left;
+		   };
+		}
+
+		@Override
+		public Function<double[], ColorCentroid> finisher() {
+			
+			return colorSum -> new ColorCentroid(colorSum[0] / colorSum[3], colorSum[1] / colorSum[3], colorSum[2] / colorSum[3]); 
+		}
+
+		@Override
+		public Set<Characteristics> characteristics() {
+			return Set.of( Characteristics.UNORDERED );
+		}
+		
+	}
+	
+	private static void reduce_v2(Image image, final int maxCluster)
+	{
+		// random assignment of pixels to a cluster
+		image.pixels.parallelStream().forEach( p -> p.centroidId = ThreadLocalRandom.current().nextInt(maxCluster) );
+		
+
+		ColorCentroid[] centroids = new ColorCentroid[maxCluster];
+
+
+		while (true) {
+			
+			// calculte ColorCentroids		
+			Map<Integer, ColorCentroid> clusterMap
+			      = image.pixels.parallelStream()
+					     .collect( Collectors.groupingBy( pixel -> pixel.centroidId, new CentroidCollector()));
+					                                        		
+			 // transfer result into array
+	         for(Integer id : clusterMap.keySet())
+	         {
+	            centroids[id] = clusterMap.get(id);
+	         }
 
 			// assign new centroids
 			long accum = 
