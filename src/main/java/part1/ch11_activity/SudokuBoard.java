@@ -124,7 +124,7 @@ public class SudokuBoard
   }
 
   /**
-   * Factory method that makes a copy the board
+   * Factory method that makes a copy of the board
    * 
    * @param board
    * @return
@@ -150,7 +150,7 @@ public class SudokuBoard
    * - - - - - - 8 - 6
    * }
    * </pre>
-   * numbers [1-9], an arbitrary letter for none separated by spaces.
+   * numbers [1-9], an arbitrary letter for none, all separated by spaces.
    * 
    * @param file
    * @return

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import part1.ch11_activity.SudokuBoard.FieldPosition;
 import part1.ch11_activity.SudokuBoard.FieldValue;
@@ -22,42 +24,73 @@ public class RecursiveSudokuSolver
     System.out.println("Solve game: ");
 
     long startTime = System.currentTimeMillis();
-    List<SudokuBoard> boards = solve(board);
+    
+    SudokuSolveTask root = new SudokuSolveTask(board);
+    ForkJoinPool.commonPool().invoke(root);
+    
     long endTime = System.currentTimeMillis();
     System.out.println("Elapsed time " + (endTime - startTime) + " [ms]");
-    System.out.println("Found " + boards.size() + " solutions");
-    boards.get(0).print();
+    System.out.println("Found " + root.join().size() + " solutions");
+    root.join().get(0).print();
 
     System.out.println("done sequential");
   }
-
-  public static List<SudokuBoard> solve(SudokuBoard board)
+  
+  @SuppressWarnings("serial")
+  private static class SudokuSolveTask extends RecursiveTask<List<SudokuBoard>>
   {
-    if (board.isComplete())
-    {
-      return List.of(board);
-    }
+	  
+	 private final SudokuBoard board;
+	 
+	 
+	public SudokuSolveTask(SudokuBoard board) {
+		super();
+		this.board = board;
+	}
 
-    FieldPosition nextFreeField = board.getFreePosition();
-    //FieldPosition nextFreeField = board.getFreePositionWithLeastCandidates();
-    Set<FieldValue> candidates = board.getValueCandidates(nextFreeField.row, nextFreeField.col);
 
-    if (candidates.isEmpty())
-    {
-      return Collections.emptyList();
-    }
 
-    List<SudokuBoard> resultList = new ArrayList<>();
-    for (FieldValue field : candidates)
-    {
-      SudokuBoard newBoard = SudokuBoard.copy(board);
-      newBoard.setValue(nextFreeField.row, nextFreeField.col, field);
-      newBoard.pack();
-      
-      List<SudokuBoard> result = solve(newBoard);
-      resultList.addAll(result);
-    }
+	@Override
+	protected List<SudokuBoard> compute() 
+	{
+		if (board.isComplete())
+	    {
+	      return List.of(board);
+	    }
 
-    return resultList;
+	    FieldPosition nextFreeField = board.getFreePosition();
+	    //FieldPosition nextFreeField = board.getFreePositionWithLeastCandidates();
+	    Set<FieldValue> candidates = board.getValueCandidates(nextFreeField.row, nextFreeField.col);
+
+	    if (candidates.isEmpty())
+	    {
+	      return Collections.emptyList();
+	    }
+	    
+	    
+	    List<SudokuBoard> resultList = new ArrayList<>();
+	    List<SudokuSolveTask> tasks = new ArrayList<>();
+	    for (FieldValue field : candidates)
+	    {
+	      SudokuBoard newBoard = SudokuBoard.copy(board);
+	      newBoard.setValue(nextFreeField.row, nextFreeField.col, field);
+	      newBoard.pack();
+	      
+	      SudokuSolveTask task = new SudokuSolveTask(newBoard);
+	      tasks.add(task);  
+	    }
+	    
+	    invokeAll( tasks );
+	    
+	    for( SudokuSolveTask task: tasks)
+	    {
+	    	resultList.addAll(task.join());
+	    }
+
+	    return resultList;
+	    
+	}
+	  
   }
+
 }
