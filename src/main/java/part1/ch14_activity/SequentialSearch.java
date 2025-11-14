@@ -13,7 +13,7 @@ public class SequentialSearch {
 
 	private static class SearchTask implements Callable<String> 
 	{
-		private boolean isRunning = true;
+		private volatile boolean isRunning = true;
 		
 		@Override
 		public String call() {
