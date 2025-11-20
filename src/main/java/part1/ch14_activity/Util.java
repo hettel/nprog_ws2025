@@ -1,8 +1,5 @@
 package part1.ch14_activity;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Util {
