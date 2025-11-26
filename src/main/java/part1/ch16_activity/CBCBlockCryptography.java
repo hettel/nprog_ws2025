@@ -9,9 +9,9 @@ public class CBCBlockCryptography
 
    public static void main(String[] args) throws Exception
    {
-      String inputFileName = "odyssey.txt";
-      String encryptedFileName = "odyssey_encrypted.txt";
-      String decryptedFileName = "odyssey_decrypted.txt";
+      String inputFileName = "./bilder/Eisvogel.jpg";
+      String encryptedFileName = "./bilder/Eisvogel_encrypted.jpg";
+      String decryptedFileName = "./bilder/Eisvogel_decrypted.jpg";
 
       System.out.println("Encrypt " + inputFileName);
       System.out.println("to file " + encryptedFileName );
