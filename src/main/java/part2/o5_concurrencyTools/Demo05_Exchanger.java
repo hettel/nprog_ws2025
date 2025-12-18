@@ -25,9 +25,10 @@ public class Demo05_Exchanger
         for(int i=0; i<10; i++)
         {
           int produced = ThreadLocalRandom.current().nextInt(100);
+          System.out.println("Waiting for exchange " + Thread.currentThread().getName());
           int received = exchanger.exchange(produced);
           System.out.printf(" %2d --> | <-- %2d \n", produced, received );
-          TimeUnit.MILLISECONDS.sleep(1000);
+          sleep( ThreadLocalRandom.current().nextInt(500,1500), TimeUnit.MILLISECONDS);
         }
       }
       catch (InterruptedException e)
@@ -46,5 +47,17 @@ public class Demo05_Exchanger
     executor.execute( new Task(exchanger) );
 
     executor.shutdown();
+  }
+  
+  private static void sleep(int time, TimeUnit unit) 
+  {
+    try
+    {
+      unit.sleep(time);
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
   }
 }

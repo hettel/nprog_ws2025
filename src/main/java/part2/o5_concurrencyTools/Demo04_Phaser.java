@@ -24,6 +24,7 @@ public class Demo04_Phaser
     {
       phaser.register();
       
+      
       while(true)
       {
         // throw the dice (a dice with 10 possibilities)
@@ -70,11 +71,12 @@ public class Demo04_Phaser
       }
     };
     
-    ExecutorService executor = Executors.newFixedThreadPool(4);
+    ExecutorService executor = Executors.newFixedThreadPool(3);
     executor.execute( new GamePlayerTask("A", phaser) );
     executor.execute( new GamePlayerTask("B", phaser) );
     executor.execute( new GamePlayerTask("C", phaser) );
     executor.execute( new GamePlayerTask("D", phaser) );
+    executor.execute( new GamePlayerTask("E", phaser) );
     
     System.out.println("Game started");
     executor.shutdown();
